@@ -24,7 +24,8 @@ var CidrHostFunc = function.New(&function.Spec{
 			Type: cty.Number,
 		},
 	},
-	Type: function.StaticReturnType(cty.String),
+	Type:         function.StaticReturnType(cty.String),
+	RefineResult: refineNotNull,
 	Impl: func(args []cty.Value, retType cty.Type) (ret cty.Value, err error) {
 		var hostNum *big.Int
 		if err := gocty.FromCtyValue(args[1], &hostNum); err != nil {
@@ -53,7 +54,8 @@ var CidrNetmaskFunc = function.New(&function.Spec{
 			Type: cty.String,
 		},
 	},
-	Type: function.StaticReturnType(cty.String),
+	Type:         function.StaticReturnType(cty.String),
+	RefineResult: refineNotNull,
 	Impl: func(args []cty.Value, retType cty.Type) (ret cty.Value, err error) {
 		_, network, err := ipaddr.ParseCIDR(args[0].AsString())
 		if err != nil {
@@ -85,7 +87,8 @@ var CidrSubnetFunc = function.New(&function.Spec{
 			Type: cty.Number,
 		},
 	},
-	Type: function.StaticReturnType(cty.String),
+	Type:         function.StaticReturnType(cty.String),
+	RefineResult: refineNotNull,
 	Impl: func(args []cty.Value, retType cty.Type) (ret cty.Value, err error) {
 		var newbits int
 		if err := gocty.FromCtyValue(args[1], &newbits); err != nil {
@@ -123,7 +126,8 @@ var CidrSubnetsFunc = function.New(&function.Spec{
 		Name: "newbits",
 		Type: cty.Number,
 	},
-	Type: function.StaticReturnType(cty.List(cty.String)),
+	Type:         function.StaticReturnType(cty.List(cty.String)),
+	RefineResult: refineNotNull,
 	Impl: func(args []cty.Value, retType cty.Type) (ret cty.Value, err error) {
 		_, network, err := ipaddr.ParseCIDR(args[0].AsString())
 		if err != nil {

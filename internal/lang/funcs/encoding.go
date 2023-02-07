@@ -23,7 +23,8 @@ var Base64DecodeFunc = function.New(&function.Spec{
 			AllowMarked: true,
 		},
 	},
-	Type: function.StaticReturnType(cty.String),
+	Type:         function.StaticReturnType(cty.String),
+	RefineResult: refineNotNull,
 	Impl: func(args []cty.Value, retType cty.Type) (cty.Value, error) {
 		str, strMarks := args[0].Unmark()
 		s := str.AsString()
@@ -47,7 +48,8 @@ var Base64EncodeFunc = function.New(&function.Spec{
 			Type: cty.String,
 		},
 	},
-	Type: function.StaticReturnType(cty.String),
+	Type:         function.StaticReturnType(cty.String),
+	RefineResult: refineNotNull,
 	Impl: func(args []cty.Value, retType cty.Type) (cty.Value, error) {
 		return cty.StringVal(base64.StdEncoding.EncodeToString([]byte(args[0].AsString()))), nil
 	},
@@ -65,7 +67,8 @@ var TextEncodeBase64Func = function.New(&function.Spec{
 			Type: cty.String,
 		},
 	},
-	Type: function.StaticReturnType(cty.String),
+	Type:         function.StaticReturnType(cty.String),
+	RefineResult: refineNotNull,
 	Impl: func(args []cty.Value, retType cty.Type) (cty.Value, error) {
 		encoding, err := ianaindex.IANA.Encoding(args[1].AsString())
 		if err != nil || encoding == nil {
@@ -108,7 +111,8 @@ var TextDecodeBase64Func = function.New(&function.Spec{
 			Type: cty.String,
 		},
 	},
-	Type: function.StaticReturnType(cty.String),
+	Type:         function.StaticReturnType(cty.String),
+	RefineResult: refineNotNull,
 	Impl: func(args []cty.Value, retType cty.Type) (cty.Value, error) {
 		encoding, err := ianaindex.IANA.Encoding(args[1].AsString())
 		if err != nil || encoding == nil {
@@ -151,7 +155,8 @@ var Base64GzipFunc = function.New(&function.Spec{
 			Type: cty.String,
 		},
 	},
-	Type: function.StaticReturnType(cty.String),
+	Type:         function.StaticReturnType(cty.String),
+	RefineResult: refineNotNull,
 	Impl: func(args []cty.Value, retType cty.Type) (cty.Value, error) {
 		s := args[0].AsString()
 
@@ -178,7 +183,8 @@ var URLEncodeFunc = function.New(&function.Spec{
 			Type: cty.String,
 		},
 	},
-	Type: function.StaticReturnType(cty.String),
+	Type:         function.StaticReturnType(cty.String),
+	RefineResult: refineNotNull,
 	Impl: func(args []cty.Value, retType cty.Type) (cty.Value, error) {
 		return cty.StringVal(url.QueryEscape(args[0].AsString())), nil
 	},
