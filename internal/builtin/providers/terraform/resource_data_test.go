@@ -121,7 +121,7 @@ func TestManagedDataPlan(t *testing.T) {
 				"input":            cty.NullVal(cty.DynamicPseudoType),
 				"output":           cty.NullVal(cty.DynamicPseudoType),
 				"triggers_replace": cty.NullVal(cty.DynamicPseudoType),
-				"id":               cty.UnknownVal(cty.String),
+				"id":               cty.UnknownVal(cty.String).RefineNotNull(),
 			}),
 		},
 
@@ -137,7 +137,7 @@ func TestManagedDataPlan(t *testing.T) {
 				"input":            cty.NullVal(cty.String),
 				"output":           cty.NullVal(cty.String),
 				"triggers_replace": cty.NullVal(cty.DynamicPseudoType),
-				"id":               cty.UnknownVal(cty.String),
+				"id":               cty.UnknownVal(cty.String).RefineNotNull(),
 			}),
 		},
 
@@ -153,7 +153,7 @@ func TestManagedDataPlan(t *testing.T) {
 				"input":            cty.StringVal("input"),
 				"output":           cty.UnknownVal(cty.String),
 				"triggers_replace": cty.NullVal(cty.DynamicPseudoType),
-				"id":               cty.UnknownVal(cty.String),
+				"id":               cty.UnknownVal(cty.String).RefineNotNull(),
 			}),
 		},
 
@@ -195,7 +195,7 @@ func TestManagedDataPlan(t *testing.T) {
 				"input":            cty.StringVal("input"),
 				"output":           cty.UnknownVal(cty.String),
 				"triggers_replace": cty.StringVal("new-value"),
-				"id":               cty.UnknownVal(cty.String),
+				"id":               cty.UnknownVal(cty.String).RefineNotNull(),
 			}),
 		},
 
@@ -222,7 +222,7 @@ func TestManagedDataPlan(t *testing.T) {
 				"triggers_replace": cty.MapVal(map[string]cty.Value{
 					"key": cty.StringVal("new value"),
 				}),
-				"id": cty.UnknownVal(cty.String),
+				"id": cty.UnknownVal(cty.String).RefineNotNull(),
 			}),
 		},
 	} {
