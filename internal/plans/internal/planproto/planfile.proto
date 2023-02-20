@@ -237,6 +237,7 @@ message CheckResults {
         UNSPECIFIED = 0;
         RESOURCE = 1;
         OUTPUT_VALUE = 2;
+        CHECK = 3;
     }
 
     message ObjectResult {

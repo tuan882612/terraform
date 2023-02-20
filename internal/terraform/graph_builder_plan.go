@@ -182,6 +182,10 @@ func (b *PlanGraphBuilder) Steps() []GraphTransformer {
 		// configuration
 		&attachDataResourceDependsOnTransformer{},
 
+		// Add nodes and edges for the check block assertions. Check block data
+		// sources were added earlier.
+		&checkTransformer{Config: b.Config, ReportChecks: true},
+
 		// DestroyEdgeTransformer is only required during a plan so that the
 		// TargetsTransformer can determine which nodes to keep in the graph.
 		&DestroyEdgeTransformer{},

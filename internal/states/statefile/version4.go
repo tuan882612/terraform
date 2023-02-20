@@ -582,6 +582,13 @@ func encodeCheckResultsV4(in *states.CheckResults) []checkResultsV4 {
 	ret := make([]checkResultsV4, 0, in.ConfigResults.Len())
 
 	for _, configElem := range in.ConfigResults.Elems {
+		if configElem.Key.CheckableKind() == addrs.CheckableCheck {
+			// Don't write check blocks into state, but checks for
+			// preconditions, postconditions, and variable validation should
+			// still be.
+			continue
+		}
+
 		configResultsOut := checkResultsV4{
 			ObjectKind: encodeCheckableObjectKindV4(configElem.Key.CheckableKind()),
 			ConfigAddr: configElem.Key.String(),

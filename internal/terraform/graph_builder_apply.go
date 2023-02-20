@@ -142,6 +142,10 @@ func (b *ApplyGraphBuilder) Steps() []GraphTransformer {
 		// node due to dependency edges, to avoid graph cycles during apply.
 		&ForcedCBDTransformer{},
 
+		// Add nodes and edges for check block assertions. Check block data
+		// sources were added earlier.
+		&checkTransformer{Config: b.Config},
+
 		// Destruction ordering
 		&DestroyEdgeTransformer{
 			Changes:   b.Changes,

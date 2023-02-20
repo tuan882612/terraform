@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/internal/addrs"
+	"github.com/hashicorp/terraform/internal/checks"
 	"github.com/hashicorp/terraform/internal/configs"
 	"github.com/hashicorp/terraform/internal/instances"
 	"github.com/hashicorp/terraform/internal/plans"
@@ -147,20 +148,53 @@ func (n *NodeApplyableResourceInstance) Execute(ctx EvalContext, op walkOperatio
 }
 
 func (n *NodeApplyableResourceInstance) dataResourceExecute(ctx EvalContext) (diags tfdiags.Diagnostics) {
+
+	// If the data source is scoped, then we don't want to report errors in the
+	// usual way.
+
+	returnResult := func(diags tfdiags.Diagnostics) tfdiags.Diagnostics {
+		// Default case is to treat the diagnostics as normal.
+		return diags
+	}
+
+	if n.Config.Container != nil {
+		if check, ok := n.Config.Container.(configs.Check); ok {
+			returnResult = func(diags tfdiags.Diagnostics) tfdiags.Diagnostics {
+				// sanity check, this shouldn't ever happen though.
+				if !check.DataResource.Addr().Equal(n.Config.Addr()) {
+					panic(fmt.Sprintf("data resource %s is not tracked by its containing check block %s", n.Addr, check.Addr()))
+				}
+
+				if diags.HasErrors() {
+					// Any problems with the data resource is reported as a check failure.
+					ctx.Checks().ReportCheckFailure(check.Addr().Absolute(n.Addr.Module), addrs.CheckDataResource, 0, diags.Err().Error())
+				} else {
+					ctx.Checks().ReportCheckResult(check.Addr().Absolute(n.Addr.Module), addrs.CheckDataResource, 0, checks.StatusPass)
+				}
+
+				// Don't raise any warnings for checks, these will be addressed as
+				// part of the plan or apply output.
+				return nil
+			}
+		} else {
+			panic(fmt.Sprintf("found unsupported container %T", n.Config.Container))
+		}
+	}
+
 	_, providerSchema, err := getProvider(ctx, n.ResolvedProvider)
 	diags = diags.Append(err)
 	if diags.HasErrors() {
-		return diags
+		return returnResult(diags)
 	}
 
 	change, err := n.readDiff(ctx, providerSchema)
 	diags = diags.Append(err)
 	if diags.HasErrors() {
-		return diags
+		return returnResult(diags)
 	}
 	// Stop early if we don't actually have a diff
 	if change == nil {
-		return diags
+		return returnResult(diags)
 	}
 	if change.Action != plans.Read && change.Action != plans.NoOp {
 		diags = diags.Append(fmt.Errorf("nonsensical planned action %#v for %s; this is a bug in Terraform", change.Action, n.Addr))
@@ -172,7 +206,7 @@ func (n *NodeApplyableResourceInstance) dataResourceExecute(ctx EvalContext) (di
 	state, repeatData, applyDiags := n.applyDataSource(ctx, change)
 	diags = diags.Append(applyDiags)
 	if diags.HasErrors() {
-		return diags
+		return returnResult(diags)
 	}
 
 	if state != nil {
@@ -183,7 +217,7 @@ func (n *NodeApplyableResourceInstance) dataResourceExecute(ctx EvalContext) (di
 		// extra details like precondition/postcondition checks.
 		diags = diags.Append(n.writeResourceInstanceState(ctx, state, workingState))
 		if diags.HasErrors() {
-			return diags
+			return returnResult(diags)
 		}
 	}
 
@@ -204,7 +238,7 @@ func (n *NodeApplyableResourceInstance) dataResourceExecute(ctx EvalContext) (di
 	)
 	diags = diags.Append(checkDiags)
 
-	return diags
+	return returnResult(diags)
 }
 
 func (n *NodeApplyableResourceInstance) managedResourceExecute(ctx EvalContext) (diags tfdiags.Diagnostics) {

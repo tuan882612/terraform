@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 
+	"github.com/zclconf/go-cty/cty"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/hashicorp/terraform/internal/addrs"
@@ -15,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform/internal/plans/internal/planproto"
 	"github.com/hashicorp/terraform/internal/states"
 	"github.com/hashicorp/terraform/version"
-	"github.com/zclconf/go-cty/cty"
 )
 
 const tfplanFormatVersion = 3
@@ -114,6 +114,8 @@ func readTfplan(r io.Reader) (*plans.Plan, error) {
 			objKind = addrs.CheckableResource
 		case planproto.CheckResults_OUTPUT_VALUE:
 			objKind = addrs.CheckableOutputValue
+		case planproto.CheckResults_CHECK:
+			objKind = addrs.CheckableCheck
 		default:
 			return nil, fmt.Errorf("aggregate check results for %s have unsupported object kind %s", rawCRs.ConfigAddr, objKind)
 		}
@@ -524,6 +526,8 @@ func writeTfplan(plan *plans.Plan, w io.Writer) error {
 				pcrs.Kind = planproto.CheckResults_RESOURCE
 			case addrs.CheckableOutputValue:
 				pcrs.Kind = planproto.CheckResults_OUTPUT_VALUE
+			case addrs.CheckableCheck:
+				pcrs.Kind = planproto.CheckResults_CHECK
 			default:
 				return fmt.Errorf("checkable configuration %s has unsupported object type kind %s", configElem.Key, kind)
 			}
